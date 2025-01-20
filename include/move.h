@@ -1,116 +1,44 @@
-#ifndef BOARD_H_
-#define BOARD_H_
+#ifndef MOVE_H_ 
+#define MOVE_H_
 
+///user defined
+#include "board.h"
+#include "util.h"
+///standard
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <assert.h>
-#include <ctype.h>
 
-#define NUM_ROWS 8
-#define NUM_COLS 8
-#define TRUE 1
-#define FALSE 0
 
-void free_rows(char** board);
-char** init_board(void);
-void move_piece(char** board, const int origin[2], const int dest[2]);
-int is_path_clear(char** board, const int origin[2], const int dest[2]);
+void move_piece(char** board, Move move);
+short is_path_clear(char** board,  const short origin[2], const short dest[2]);
+
+
+//validate piece-type moves (pawn, rook, etc)
+//   ~move to different file (validate.h/c)?
 short validate_pawn(char** board, const short row_diff, const short col_diff,
-		const short initial_row, const char origin_piece, const char dest_piece);
+		const short initial_row,  const short origin_row,
+	       	const char origin_piece, const char dest_piece);
 short validate_rook(char** board, const short row_diff, const short col_diff,
-		const char origin_piece, const char dest_piece,
-		const short origin[2], const short dest[2]);
+		const char origin_piece, const char dest_piece, Move move);
 short validate_knight(char** board, const short row_diff, const short col_diff,
-		const char origin_piece, const char dest_piece,
-	        const short origin[2], const short dest[2]);
-short validate_bishop(char** board, const short row_diff, const short col_diff,
-		const char origin_piece, const char dest_piece,
-		const char origin[2], const char dest[2])
-short validate_king(char** board, const short row_diff const short col_diff,
 		const char origin_piece, const char dest_piece);
-int is_move_legal(char** board, const int origin[2], const int dest[2]);
-void draw_board(char** board);
+short validate_bishop(char** board, const short row_diff, const short col_diff,
+		const char origin_piece, const char dest_piece);
+short validate_king(char** board, const short row_diff, const short col_diff,
+		const char origin_piece, const char dest_piece);
 
 
-#define BOARD_IMPLEMENTATION_
+short is_move_legal(char** board,  Move move);
 
+//considering moving these functioins to a separete file
+short is_checkmate(char** board,  Move move);
 
-/*********************************************************************
-* void free_rows(char** board, size_t row)
-*
-* 	PURPOSE ::
-*  		free the memory allocated for the board and its row 
-*  			-needs to free each row individually, 
-*     			(pointer to pointers)
-* 	@param 
-*	 - board :: 2d character array
-*	 - row   :: the row to start deallocating at 
-*	    	    (in case of error in init)
-*	 @return
-*	 - void :: no need to return anything
-*********************************************************************/
-void free_rows(char** board, size_t row)
-{
-	for (size_t i = 0; i < row; ++i)
-		free(board[i]);
-	return;
-}
+#ifdef MOVE_IMPLEMENTATION_
 
 /*********************************************************************
-* char** init_board(void)
-*
-*   	PURPOSE ::
-*		- initialize a 2 dimensional (row and column)
-*		character array that will represent our chess board.
-*		Lowercase pieces will represent the "black" pieces,
-*		Uppercase pieces will represent the "white" pieces.
-*     			(pointer to pointers)
-* 	@param 
-*	 - board :: 2d character array
-*	 - row   :: the row to start deallocating at 
-*	    	    (in case of error in init)
-*	 @return
-*	 - void :: no need to return anything
-*********************************************************************/
-char** init_board(void)
-{
-	char **board = (char**)malloc(NUM_ROWS * sizeof(char*));
-	
-	if(!board)
-	{
-		perror("Memory allocation failed for board!\n\t{init_board}\n");
-		return NULL;
-	}
-
-	const char init_board[8][8] = {
-		{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}
-		{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p' }  
-		{'.', '.', '.', '.', '.', '.', '.', '.' }
-		{'.', '.', '.', '.', '.', '.', '.', '.' }
-		{'.', '.', '.', '.', '.', '.', '.', '.' }
-		{'.', '.', '.', '.', '.', '.', '.', '.' }
-		{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P' }  
-		{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
-	};
-
-	for(size_t row = 0; row < NUM_ROWS; ++row)
-	{
-		board[row] = (char*) malloc(NUM_COLS * sizeof(char));
-		if(!board[row])
-		{
-			perror("board row %d is NULL\n\t{init_board}\n");
-			free_rows(board, row)
-			free(board);
-			return NULL;
-		}
-		for(size_t col = 0; col < NUM_COLS; ++col)
-			board[row][col] = init_board[row][col];
-	}
-	return board;
-}
-
-/*********************************************************************
-* void move_piece(char** board, const int origin[2], const int dest[2]);
+* void move_piece(char** board, Move move)
 *
 * 	PURPOSE ::
 *  		Move the piece at origin to dest
@@ -125,7 +53,7 @@ char** init_board(void)
 *	 - void :: no need to return anything
 *********************************************************************/
 
-void move_piece(char** board, const int origin[2], const int dest[2])
+void move_piece(char** board, Move move)
 {
 	if(!board)
 	{
@@ -133,27 +61,26 @@ void move_piece(char** board, const int origin[2], const int dest[2])
 		return;
 	}
 	
-	char piece = board[origin[0]][origin[1]];
-	board[dest[0]][dest[1]] = piece;
-	board[origin[0]][origin[1]] = '.';
+	char piece = board[move.origin[0]][move.origin[1]];
+	board[move.dest[0]][move.dest[1]] = piece;
+	board[move.origin[0]][move.origin[1]] = '.';
 	return;
 }
-
 /*********************************************************************
-* int is_path_clear(char** board, const int origin[2], const int dest[2])
+* short is_path_clear(char** board,  Move move)
 *
 * 	PURPOSE ::
 *  		free the memory allocated for the board and its row 
 *  			-needs to free each row individually, 
 *     			(pointer to pointers)
 * 	@param 
-*	 - board :: 2d character array
+*	 - board :: 3d character array
 *	 - row   :: the row to start deallocating at 
 *	    	    (in case of error in init)
 *	 @return
 *	 - void :: no need to return anything
 *********************************************************************/
-int is_path_clear(char** board, const int origin[2], const int dest[2])
+short is_path_clear(char** board,  const short origin[2], const short dest[2])
 {
 	if(!board)
 	{
@@ -161,10 +88,10 @@ int is_path_clear(char** board, const int origin[2], const int dest[2])
 		return -1;
 	}
 	
-	origin_row = origin[0];
-	origin_col = origin[1];
-	dest_row   = dest[0];
-	dest_col   = dest[1];
+	short origin_row = origin[0];
+	short origin_col = origin[1];
+	short dest_row   = dest[0];
+	short dest_col   = dest[1];
 
 	//if the origin and dest are the same square
 	if ( (origin_row == dest_row) && (origin_col == dest_col) )
@@ -189,18 +116,11 @@ int is_path_clear(char** board, const int origin[2], const int dest[2])
 	short col_step = 0;
 	if(dest_col > origin_col)
 		col_step = 1;
-	else
-		col_step = -1;
 
-	//determine which square we will travel to next
-	int next_square[2] = { (origin_row + row_step), (origin_col + col_step)}
-
-	//now that we know where we are traveling next,
-	//lets check to see if that square is occupied
-	if( board[next_square[0]][next_square[1]] != '.')
+	//calculate the next square to travel to, ensure it is empty
+	short next_square[2] = { (origin_row + row_step), (origin_col + col_step) };
+	if(board[next_square[0]][next_square[1]] != '.')
 		return FALSE;
-
-	//continue recursively to the next square
 	return is_path_clear(board, next_square, dest);
 }
 /*********************************************************************
@@ -233,6 +153,8 @@ short is_available(char** board, const char origin_piece, const char dest_piece)
 		return TRUE;
 	return FALSE;
 }
+
+//piece-type validation
 /*********************************************************************
 * short validate_pawn(char** board, const short row_diff, const short col_diff,
 *	       	const char origin_piece, const dest_piece)
@@ -249,17 +171,18 @@ short is_available(char** board, const char origin_piece, const char dest_piece)
 *	 - col_diff     :: the difference between the origin and destination columns (absolute value)
 *	 - origin_piece :: the single character that represents the piece type at origin tile
 *	 - dest_piece   :: the single character that represents the piece type at the requested tile
-*	 @return
+*	
+*	@return
 *	 - void :: short integer
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
 short validate_pawn(char** board, const short row_diff, const short col_diff,
-	       	const short initial_row, const char origin_piece, const dest_piece)
+		const short initial_row, const short origin_row, const char origin_piece, const char dest_piece)
 {
 	if(!board)
 	{
-		perror("Board does not exist!\n\t{validate_pawn}\n");
+		error_noexist("board", "validate_pawn");
 		return -1;
 	}
 
@@ -278,22 +201,15 @@ short validate_pawn(char** board, const short row_diff, const short col_diff,
 			return TRUE;
 	}
 	//else if we is attacking, gotta be diagonal
-	else if (islower(dest_piece) != is_lower(origin_piece))
+	else if (islower(dest_piece) != islower(origin_piece))
 		if(col_diff == 1 && row_diff == 1)
 			return TRUE;
 	return FALSE;
-	//     0   1   2
-	//A  | . | . | .
-	//B  | . | P | .
-	//C  | p | . | .
-	// p @ C0
-	// P @ B1
-
 }
 /*********************************************************************
 * short validate_rook(char** board, const short row_diff, const short col_diff,
 *		const char origin_piece, const char dest_piece,
-*		const short origin[2], const short dest[2])
+*		 Move move)
 *
 *
 * 	PURPOSE ::
@@ -317,7 +233,7 @@ short validate_pawn(char** board, const short row_diff, const short col_diff,
 *********************************************************************/
 short validate_rook(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece,
-		const short origin[2], const short dest[2])
+		 Move move)
 {
 	if(!board)
 	{
@@ -331,7 +247,7 @@ short validate_rook(char** board, const short row_diff, const short col_diff,
 	//     		you may continue
 	if(row_diff == 0 || col_diff == 0)
 		if(is_available(board, origin_piece, dest_piece) == TRUE)
-			if(is_path_clear(board, origin, dest) == TRUE)
+			if(is_path_clear(board, move.origin, move.dest) == TRUE)
 				return TRUE;
 	//otherwise its not a valid move bro
 	return FALSE;
@@ -454,14 +370,8 @@ short validate_king(char** board, const short row_diff, const short col_diff,
 	return FALSE;
 
 }
-
-
-
-
-
-
 /*********************************************************************
-* int is_move_legal(char** board, const int origin[2], const int dest[2]
+* int is_move_legal(char** board,  Move move[2]
 *
 * 	PURPOSE ::
 *  		determine whether the provided move (origin -> dest)
@@ -472,18 +382,18 @@ short validate_king(char** board, const short row_diff, const short col_diff,
 *	 @return
 *	 - void :: no need to return anything
 *********************************************************************/
-short is_move_legal(char** board, const int origin[2], const int dest[2])
+short is_move_legal(char** board,  Move move)
 {
 	if(!board)
 	{
-		perror("Board does not exist!\n\t{is_path_clear}\n");
+		perror("Board does not exist!\n\t{is_move_legal}\n");
 		return -1;
 	}
 	
-	origin_row = origin[0];
-	origin_col = origin[1];
-	dest_row   = dest[0];
-	dest_col   = dest[1];
+	short origin_row  = move.origin[0];
+	short origin_col  = move.origin[1];
+	short dest_row    = move.dest[0];
+	short dest_col    = move.dest[1];
 
 	//if the origin and dest are the same square
 	if ( (origin_row == dest_row) && (origin_col == dest_col) )
@@ -509,91 +419,52 @@ short is_move_legal(char** board, const int origin[2], const int dest[2])
 		initial_row = 1;
 
 	//create the conditional character so i know what piece is moving
-	const char conditional = tolower(origin_piece);
-	short is_valid = -1;
+	char conditional = tolower(origin_piece);
+
 	switch(conditional)
 	{
 		case 'p':
 		{
-			 is_valid = validate_pawn(board, row_diff, col_diff, initial_row, origin_piece, dest_piece)
+			return validate_pawn(board, 
+			                     row_diff, col_diff, 
+				      	     initial_row, origin_row,
+			 		     origin_piece, dest_piece);
 		}
 		case 'r':
 		{
-			is_valid = validate_rook(board, row_diff, col_diff, origin_piece, dest_piece, origin, dest);
+			return validate_rook(board, 
+				     	     row_diff, col_diff, 
+				             origin_piece, dest_piece,
+				             move);
 		}
 		case 'n':
-		{
-			is_valid = validate_knight(board, row_diff, col_diff, origin_piece, dest_piece);
+		{	
+			return validate_knight(board, 
+					       row_diff, col_diff,
+					       origin_piece, dest_piece);
 		}
 		case 'b':
 		{
-			is_valid = validate_bishop(board, row_diff, col_diff, origin_piece, dest_piece, origin, dest);
+			return validate_bishop(board,
+					       row_diff, col_diff,
+					       origin_piece, dest_piece);
 		}
 		case 'q':
 		{
-			if(validate_bishop(board, row_diff, col_diff, origin_piece, dest_piece) == TRUE ||
-			   validate_rook(board, row_diff, col_diff, origin_piece, dest_piece) == TRUE)
-				is_valid = TRUE;
+			if(validate_rook(board, row_diff, col_diff, origin_piece, dest_piece, move) == TRUE || 
+			   validate_bishop(board, row_diff, col_diff, origin_piece, dest_piece) == TRUE)
+				return TRUE;
+			return FALSE;	
 		}
 		case 'k':
 		{
-			is_valid = validate_king(board, row_diff, col_diff, origin_piece, dest_piece);
+			return validate_king(board,
+				       	     row_diff, col_diff,
+				 	     origin_piece, dest_piece);
 		}
-		default:
-			return FALSE
+		default: 
+			return FALSE;
 	}
-	return -66; //-66, this should never happen, like order 66
 }
-/*********************************************************************
-* void free_rows(char** board, size_t row)
-*
-* 	PURPOSE ::
-*  		free the memory allocated for the board and its row 
-*  			-needs to free each row individually, 
-*     			(pointer to pointers)
-* 	@param 
-*	 - board :: 2d character array
-*	 - row   :: the row to start deallocating at 
-*	    	    (in case of error in init)
-*	 @return
-*	 - void :: no need to return anything
-*********************************************************************/
-void free_rows(char** board, size_t row)
-{
-	for (size_t i = 0; i < row; ++i)
-		free(board[i]);
-	return;
-}
-
-/*********************************************************************
-* void draw_board(char** board)
-*
-* 	PURPOSE ::
-*  		print each {row}{col} of the board
-* 
-* 	@param 
-*	 - board :: 2d character array
-*
-* 	@return
-*	 - void :: no need to return anything
-*********************************************************************/
-void draw_board(char** board)
-{
-	if(!board)
-	{
-		perror("Board does not exist!\n\t{draw_board}");
-		return;
-	}
-
-	for(size_t row = 0; row < NUM_ROWS; ++row)
-	{
-		for(size_t col = 0; row < NUM_COLS; ++col)
-			printf("%c ", board[row][col];
-		printf("\n");
-	}
-	printf("\n");
-	return
-}
-#endif //BOARD_IMPLEMENTATION_
-#endif //BOARD_H_
-
+#endif //MOVE_IMPLEMENTATION_
+#endif //MOVE_H_
