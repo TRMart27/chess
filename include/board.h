@@ -16,6 +16,8 @@
 
 void cleanup(char** board, size_t row);
 char** init_board(void);
+void set_piece(char** board, short row, short col, char piece);
+char get_piece(char** board, short row, short col);
 void draw_board(char** board);
 
 #ifdef BOARD_IMPLEMENTATION_
@@ -84,17 +86,64 @@ char** init_board(void)
 
 	for(size_t row = 0; row < NUM_ROWS; ++row)
 	{
-		board[row] = (char*) malloc(NUM_COLS * sizeof(char));
+  board[row] = (char*) malloc(NUM_COLS * sizeof(char));
 		if(!board[row])
 		{
 			cleanup(board, row);
 			error_nomem();
-				
 		}
 		for(size_t col = 0; col < NUM_COLS; ++col)
 			board[row][col] = init_board[row][col];
 	}
 	return board;
+}
+/*********************************************************************
+* void set_piece(char** board, short row, short col, char piece)
+*
+* 	PURPOSE ::
+*  		set the piece on <board> at coordinate <row>,<col>
+*    to the provided <piece>
+* 
+* 	@param 
+*	 - board :: 2d character array
+*	 - row   :: numerical value representing the row coordinate 
+*             (0 <= row <= 7)
+*  - col   :: numerical value representing the col coordinate 
+*             (0 <= col <= 7)
+*	 - piece :: char piecetype 
+*
+* 	@return
+*	 - void :: no need to return anything
+*********************************************************************/
+void set_piece(char** board, short row, short col, char piece)
+{
+  if(!board)
+		  ERR_NOEXIST(board, "set_piece");
+		
+		board[row][col] = piece;
+		return;
+}
+/*********************************************************************
+* char get_piece(char** board, short row, short col)
+*
+* 	PURPOSE ::
+*  		get the piece on <board> at <row>,<col> 
+* 
+* 	@param 
+*	 - board :: 2d character array
+*	 - row   :: numerical value representing the row coordinate 
+*             (0 <= row <= 7)
+*  - col   :: numerical value representing the col coordinate 
+*             (0 <= col <= 7)
+*
+* 	@return
+*	 - char :: piecetype at specified coordinate 
+*********************************************************************/
+char get_piece(char** board, short row, short col)
+{
+  if(!board)
+		  ERR_NOEXIST(board, "get_piece");
+		return board[row][col];
 }
 /*********************************************************************
 * void draw_board(char** board)
