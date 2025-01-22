@@ -12,7 +12,7 @@
 
 
 void move_piece(char** board, Move move);
-short is_path_clear(char** board,  const short origin[2], const short dest[2]);
+int is_path_clear(char** board,  const short origin[2], const short dest[2]);
 
 
 //validate piece-type moves (pawn, rook, etc)
@@ -20,20 +20,20 @@ short is_path_clear(char** board,  const short origin[2], const short dest[2]);
 short validate_pawn(char** board, const short row_diff, const short col_diff,
 		const short initial_row,  const short origin_row,
 	       	const char origin_piece, const char dest_piece);
-short validate_rook(char** board, const short row_diff, const short col_diff,
+int validate_rook(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece, Move move);
-short validate_knight(char** board, const short row_diff, const short col_diff,
+int validate_knight(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece);
-short validate_bishop(char** board, const short row_diff, const short col_diff,
+int validate_bishop(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece);
-short validate_king(char** board, const short row_diff, const short col_diff,
+int validate_king(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece);
 
 
-short is_move_legal(char** board,  Move move);
+int is_move_legal(char** board,  Move move);
 
 //considering moving these functioins to a separete file
-short is_checkmate(char** board,  Move move);
+int is_checkmate(char** board,  Move move);
 
 #ifdef MOVE_IMPLEMENTATION_
 
@@ -80,7 +80,7 @@ void move_piece(char** board, Move move)
 *	 @return
 *	 - void :: no need to return anything
 *********************************************************************/
-short is_path_clear(char** board,  const short origin[2], const short dest[2])
+int is_path_clear(char** board,  const short origin[2], const short dest[2])
 {
 	if(!board)
 	{
@@ -141,7 +141,7 @@ short is_path_clear(char** board,  const short origin[2], const short dest[2])
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
-short is_available(char** board, const char origin_piece, const char dest_piece)
+int is_available(char** board, const char origin_piece, const char dest_piece)
 {
 	if(!board)
 	{
@@ -177,7 +177,7 @@ short is_available(char** board, const char origin_piece, const char dest_piece)
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
-short validate_pawn(char** board, const short row_diff, const short col_diff,
+int validate_pawn(char** board, const short row_diff, const short col_diff,
 		const short initial_row, const short origin_row, const char origin_piece, const char dest_piece)
 {
 	if(!board)
@@ -231,7 +231,7 @@ short validate_pawn(char** board, const short row_diff, const short col_diff,
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
-short validate_rook(char** board, const short row_diff, const short col_diff,
+int validate_rook(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece,
 		 Move move)
 {
@@ -274,7 +274,7 @@ short validate_rook(char** board, const short row_diff, const short col_diff,
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
-short validate_knight(char** board, const short row_diff, const short col_diff,
+int validate_knight(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece)
 {
 	if(!board)
@@ -315,7 +315,7 @@ short validate_knight(char** board, const short row_diff, const short col_diff,
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
-short validate_bishop(char** board, const short row_diff, const short col_diff,
+int validate_bishop(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece)
 {
 	if(!board)
@@ -354,7 +354,7 @@ short validate_bishop(char** board, const short row_diff, const short col_diff,
 *	 	- non-zero ( negative ) :: something bad happened
 *	 	- zero (or poisitive)   :: something good happened
 *********************************************************************/
-short validate_king(char** board, const short row_diff, const short col_diff,
+int validate_king(char** board, const short row_diff, const short col_diff,
 		const char origin_piece, const char dest_piece)
 {
 	if(!board)
@@ -382,7 +382,7 @@ short validate_king(char** board, const short row_diff, const short col_diff,
 *	 @return
 *	 - void :: no need to return anything
 *********************************************************************/
-short is_move_legal(char** board,  Move move)
+int is_move_legal(char** board,  Move move)
 {
 	if(!board)
 	{
